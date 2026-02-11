@@ -1,0 +1,17 @@
+<?php
+
+namespace {{ namespace }};
+
+use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+{{ queueImport }}
+class {{ class }} extends ColumnWatcher{{ queueInterface }}
+{
+    protected function execute(ColumnChange $change): void
+    {
+        // $change->model    - The model instance
+        // $change->column   - The column that changed
+        // $change->oldValue - The previous value
+        // $change->newValue - The new value
+    }
+}

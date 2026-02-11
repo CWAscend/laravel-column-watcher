@@ -1,0 +1,55 @@
+{
+    "name": "cwascend/laravel-column-watcher",
+    "description": "Watch and react to Eloquent model column changes with PHP 8 attributes. Trigger handlers when specific columns are modified, with support for queued handlers, before/after save timing, and built-in infinite loop protection. Think observers, but column specific!",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "model",
+        "observer",
+        "watcher",
+        "column",
+        "attribute",
+        "events",
+        "hooks",
+        "dirty",
+        "changes",
+        "tracking",
+        "php8"
+    ],
+    "authors": [
+        {
+            "name": "Charlie Waddell",
+            "email": "charlie.waddell@ascend.agency"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/database": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CWAscend\\LaravelColumnWatcher\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CWAscend\\LaravelColumnWatcher\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CWAscend\\LaravelColumnWatcher\\ColumnWatcherServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

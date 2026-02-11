@@ -1,0 +1,26 @@
+/vendor/
+/.phpunit.cache/
+/node_modules/
+.env
+.env.backup
+.env.production
+composer.lock
+phpunit.xml
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# IDE
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+/coverage/
+.phpunit.coverage.cache
