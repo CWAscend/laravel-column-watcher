@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Console;
+namespace Ascend\LaravelColumnWatcher\Console;
 
-use CWAscend\LaravelColumnWatcher\Support\WatcherRegistry;
+use Ascend\LaravelColumnWatcher\Support\WatcherRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
@@ -121,8 +121,8 @@ class ListWatchersCommand extends Command
     /**
      * Group watchers by model.column.timing key.
      *
-     * @param  array<int, array{model: string, column: string, timing: \CWAscend\LaravelColumnWatcher\Enums\Timing, handler: string}>  $watchers
-     * @return array<string, array{model: string, column: string, timing: \CWAscend\LaravelColumnWatcher\Enums\Timing, handlers: array<string>}>
+     * @param  array<int, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handler: string}>  $watchers
+     * @return array<string, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handlers: array<string>}>
      */
     protected function groupWatchers(array $watchers): array
     {

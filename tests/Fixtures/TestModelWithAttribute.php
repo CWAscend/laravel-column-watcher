@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Fixtures;
+namespace Ascend\LaravelColumnWatcher\Tests\Fixtures;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
 use Illuminate\Database\Eloquent\Model;
 
 #[Watch('status', StatusChangedHandler::class)]

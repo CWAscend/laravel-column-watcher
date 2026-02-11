@@ -1,12 +1,12 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class StaticRegistrationTest extends TestCase
 {

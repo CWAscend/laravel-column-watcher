@@ -1,12 +1,12 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher;
+namespace Ascend\LaravelColumnWatcher;
 
-use CWAscend\LaravelColumnWatcher\Console\ListWatchersCommand;
-use CWAscend\LaravelColumnWatcher\Console\MakeWatcherCommand;
-use CWAscend\LaravelColumnWatcher\Support\ColumnWatcherState;
-use CWAscend\LaravelColumnWatcher\Support\ColumnWatcherSubscriber;
-use CWAscend\LaravelColumnWatcher\Support\WatcherRegistry;
+use Ascend\LaravelColumnWatcher\Console\ListWatchersCommand;
+use Ascend\LaravelColumnWatcher\Console\MakeWatcherCommand;
+use Ascend\LaravelColumnWatcher\Support\ColumnWatcherState;
+use Ascend\LaravelColumnWatcher\Support\ColumnWatcherSubscriber;
+use Ascend\LaravelColumnWatcher\Support\WatcherRegistry;
 use Illuminate\Support\ServiceProvider;
 
 class ColumnWatcherServiceProvider extends ServiceProvider

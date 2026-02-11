@@ -1,6 +1,6 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Fixtures;
+namespace Ascend\LaravelColumnWatcher\Tests\Fixtures;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -2,8 +2,8 @@
 
 namespace {{ namespace }};
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 {{ queueImport }}
 class {{ class }} extends ColumnWatcher{{ queueInterface }}
 {

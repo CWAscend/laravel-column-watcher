@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Events;
+namespace Ascend\LaravelColumnWatcher\Events;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
 use Illuminate\Foundation\Events\Dispatchable;
 use Throwable;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModelWithAttribute;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModelWithAttribute;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class AttributeWatchingTest extends TestCase
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Unit;
+namespace Ascend\LaravelColumnWatcher\Tests\Unit;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class WatchAttributeTest extends TestCase
 {

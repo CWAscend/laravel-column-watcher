@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Concerns;
+namespace Ascend\LaravelColumnWatcher\Concerns;
 
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 use Closure;
 use PHPUnit\Framework\Assert;
 

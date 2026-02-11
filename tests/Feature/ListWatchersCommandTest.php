@@ -1,14 +1,14 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 use Illuminate\Support\Facades\File;
 
 class ListWatchersCommandTest extends TestCase
@@ -85,8 +85,8 @@ class ListWatchersCommandTest extends TestCase
 
 namespace App\Models;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
 use Illuminate\Database\Eloquent\Model;
 
 #[Watch('status', StatusChangedHandler::class)]
@@ -289,8 +289,8 @@ PHP;
 
 namespace App\Models\Domain1;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
 use Illuminate\Database\Eloquent\Model;
 
 #[Watch('status', StatusChangedHandler::class)]
@@ -305,8 +305,8 @@ PHP;
 
 namespace App\Models\Domain2;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\MultiColumnHandler;
 use Illuminate\Database\Eloquent\Model;
 
 #[Watch('name', MultiColumnHandler::class)]

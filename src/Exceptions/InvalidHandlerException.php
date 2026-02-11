@@ -1,6 +1,6 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Exceptions;
+namespace Ascend\LaravelColumnWatcher\Exceptions;
 
 use Exception;
 

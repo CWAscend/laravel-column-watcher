@@ -1,9 +1,9 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Support;
+namespace Ascend\LaravelColumnWatcher\Support;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;

@@ -1,6 +1,6 @@
 # Laravel Column Watcher
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/cwascend/laravel-column-watcher.svg?style=flat-square)](https://packagist.org/packages/cwascend/laravel-column-watcher)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ascend/laravel-column-watcher.svg?style=flat-square)](https://packagist.org/packages/ascend/laravel-column-watcher)
 [![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen?style=flat-square)](tests)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue?style=flat-square)](composer.json)
 [![Laravel Version](https://img.shields.io/badge/laravel-11%20%7C%2012-red?style=flat-square)](composer.json)
@@ -143,26 +143,33 @@ Column Watcher represents a paradigm shift in how you react to model changes. In
 - **Visible declarations** right on your model
 
 ```php
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
 
 #[Watch('status', HandleStatusChange::class)]
-#[Watch('status', SyncToExternalApi::class)]  // Separate concern, separate handler
+#[Watch('status', SyncToExternalApi::class)]
 #[Watch('priority', HandlePriorityChange::class)]
 class Request extends Model
 {
     // Anyone reading this model immediately knows what happens on change
+    // Separate concern, separate handler
 }
 ```
 
-Each handler is a focused, testable, optionally-queueable class:
+Each handler is a focused, testable, optionally-queueable class.
+
+**Fully mockable and fakeable:**
 
 ```php
-// Fully mockable and fakeable
 HandleStatusChange::fake();
-$request->update(['status' => 'approved']);
-HandleStatusChange::assertTriggered();
 
-// Queueable with a single interface
+$request->update(['status' => 'approved']);
+
+HandleStatusChange::assertTriggered();
+```
+
+**Queueable with a single interface:**
+
+```php
 class SyncToExternalApi extends ColumnWatcher implements ShouldQueue
 {
     protected function execute(ColumnChange $change): void
@@ -177,7 +184,7 @@ No observer class. No service provider registration. No manual change detection.
 ## Installation
 
 ```bash
-composer require cwascend/laravel-column-watcher
+composer require ascend/laravel-column-watcher
 ```
 
 The package auto-discovers its service provider. No manual registration needed.
@@ -202,8 +209,8 @@ This creates `app/Watchers/HandleStatusChange.php`:
 
 namespace App\Watchers;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 
 class HandleStatusChange extends ColumnWatcher
 {
@@ -230,7 +237,7 @@ Add the `#[Watch]` attribute to your model class:
 
 namespace App\Models;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
 use App\Watchers\HandleStatusChange;
 use Illuminate\Database\Eloquent\Model;
 
@@ -246,7 +253,7 @@ class Request extends Model
 Register watchers in a service provider:
 
 ```php
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
 use App\Models\Request;
 use App\Watchers\HandleStatusChange;
 
@@ -299,13 +306,13 @@ class Request extends Model {}
 By default, handlers run **after** the model is saved (`Timing::SAVED`). You can run them **before** save using the `timing` parameter:
 
 ```php
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
 
 // Runs AFTER save (default) - use for notifications, logging, side effects
 #[Watch('status', SendNotification::class)]
 
 // Runs BEFORE save - use for validation, transformation, blocking saves
-#[Watch('status', ValidateStatusTransition::class, timing: Timing::SAVING)]
+#[Watch('status', ValidateStatusTransition::class, Timing::SAVING)]
 ```
 
 **When to use each:**
@@ -324,8 +331,8 @@ php artisan make:watcher SyncToExternalService --queued
 ```
 
 ```php
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class SyncToExternalService extends ColumnWatcher implements ShouldQueue
@@ -433,7 +440,7 @@ class AuditSensitiveChange extends ColumnWatcher
 ### Validate State Transitions
 
 ```php
-#[Watch('status', ValidateStatusTransition::class, timing: Timing::SAVING)]
+#[Watch('status', ValidateStatusTransition::class, Timing::SAVING)]
 class Order extends Model {}
 ```
 
@@ -548,7 +555,7 @@ class Request extends Model {}
 You can temporarily disable watchers globally (useful for migrations, seeding, or testing):
 
 ```php
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
 
 // Disable all watchers
 ColumnWatcher::disable();
@@ -589,9 +596,9 @@ The package dispatches events during watcher execution, allowing you to hook int
 All events contain a reference to the watcher instance, giving you access to the model, column, and values:
 
 ```php
-use CWAscend\LaravelColumnWatcher\Events\WatcherStarted;
-use CWAscend\LaravelColumnWatcher\Events\WatcherSucceeded;
-use CWAscend\LaravelColumnWatcher\Events\WatcherFailed;
+use Ascend\LaravelColumnWatcher\Events\WatcherStarted;
+use Ascend\LaravelColumnWatcher\Events\WatcherSucceeded;
+use Ascend\LaravelColumnWatcher\Events\WatcherFailed;
 
 // In a service provider or listener
 Event::listen(WatcherStarted::class, function (WatcherStarted $event) {
@@ -765,7 +772,7 @@ $this->assertEquals('approved', $changes[1]->newValue);
 To disable all watchers globally (useful for migrations, seeding, or bulk operations):
 
 ```php
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
 
 ColumnWatcher::disable();
 
@@ -865,10 +872,10 @@ class SyncToExternal extends ColumnWatcher implements ShouldQueue
 You cannot use queueable handlers with `Timing::SAVING`. This is enforced at registration time:
 
 ```php
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
 
 // This will throw InvalidTimingException
-#[Watch('status', QueueableHandler::class, timing: Timing::SAVING)]
+#[Watch('status', QueueableHandler::class, Timing::SAVING)]
 class Order extends Model {}
 ```
 

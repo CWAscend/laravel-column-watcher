@@ -1,9 +1,9 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Fixtures;
+namespace Ascend\LaravelColumnWatcher\Tests\Fixtures;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 
 class FakeableHandler extends ColumnWatcher
 {

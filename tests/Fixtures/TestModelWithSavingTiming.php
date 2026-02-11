@@ -1,9 +1,9 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Fixtures;
+namespace Ascend\LaravelColumnWatcher\Tests\Fixtures;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Illuminate\Database\Eloquent\Model;
 
 #[Watch('status', StatusChangedHandler::class, timing: Timing::SAVING)]

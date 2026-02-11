@@ -1,9 +1,9 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Fixtures;
+namespace Ascend\LaravelColumnWatcher\Tests\Fixtures;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class QueueableHandler extends ColumnWatcher implements ShouldQueue

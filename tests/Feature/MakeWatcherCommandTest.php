@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 use Illuminate\Support\Facades\File;
 
 class MakeWatcherCommandTest extends TestCase
@@ -34,8 +34,8 @@ class MakeWatcherCommandTest extends TestCase
         $contents = File::get(app_path('Watchers/TestWatcher.php'));
 
         $this->assertStringContainsString('extends ColumnWatcher', $contents);
-        $this->assertStringContainsString('use CWAscend\LaravelColumnWatcher\ColumnWatcher', $contents);
-        $this->assertStringContainsString('use CWAscend\LaravelColumnWatcher\Data\ColumnChange', $contents);
+        $this->assertStringContainsString('use Ascend\LaravelColumnWatcher\ColumnWatcher', $contents);
+        $this->assertStringContainsString('use Ascend\LaravelColumnWatcher\Data\ColumnChange', $contents);
         $this->assertStringContainsString('protected function execute(ColumnChange $change): void', $contents);
     }
 

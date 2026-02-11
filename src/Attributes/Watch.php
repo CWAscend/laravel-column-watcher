@@ -1,8 +1,8 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Attributes;
+namespace Ascend\LaravelColumnWatcher\Attributes;
 
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]

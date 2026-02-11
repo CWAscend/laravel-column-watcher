@@ -1,14 +1,14 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class ValidationTest extends TestCase
 {

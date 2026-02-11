@@ -1,10 +1,10 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests;
+namespace Ascend\LaravelColumnWatcher\Tests;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcherServiceProvider;
-use CWAscend\LaravelColumnWatcher\Support\ColumnWatcherState;
-use CWAscend\LaravelColumnWatcher\Support\WatcherRegistry;
+use Ascend\LaravelColumnWatcher\ColumnWatcherServiceProvider;
+use Ascend\LaravelColumnWatcher\Support\ColumnWatcherState;
+use Ascend\LaravelColumnWatcher\Support\WatcherRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;

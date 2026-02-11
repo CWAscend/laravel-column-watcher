@@ -1,15 +1,15 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Events\WatcherFailed;
-use CWAscend\LaravelColumnWatcher\Events\WatcherStarted;
-use CWAscend\LaravelColumnWatcher\Events\WatcherSucceeded;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\QueueableHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Events\WatcherFailed;
+use Ascend\LaravelColumnWatcher\Events\WatcherStarted;
+use Ascend\LaravelColumnWatcher\Events\WatcherSucceeded;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\QueueableHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 use Exception;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -194,7 +194,7 @@ class WatcherEventsTest extends TestCase
 
 class FailingHandler extends ColumnWatcher
 {
-    protected function execute(\CWAscend\LaravelColumnWatcher\Data\ColumnChange $change): void
+    protected function execute(\Ascend\LaravelColumnWatcher\Data\ColumnChange $change): void
     {
         throw new Exception('Watcher failed');
     }

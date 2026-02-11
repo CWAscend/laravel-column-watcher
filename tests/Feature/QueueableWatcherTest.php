@@ -1,11 +1,11 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Feature;
+namespace Ascend\LaravelColumnWatcher\Tests\Feature;
 
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\DirectQueueableHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
 use Illuminate\Support\Facades\Queue;
 
 class QueueableWatcherTest extends TestCase

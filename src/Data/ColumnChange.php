@@ -1,6 +1,6 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Data;
+namespace Ascend\LaravelColumnWatcher\Data;
 
 use Illuminate\Database\Eloquent\Model;
 

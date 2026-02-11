@@ -1,15 +1,15 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher;
+namespace Ascend\LaravelColumnWatcher;
 
-use CWAscend\LaravelColumnWatcher\Concerns\Fakeable;
-use CWAscend\LaravelColumnWatcher\Data\ColumnChange;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Events\WatcherFailed;
-use CWAscend\LaravelColumnWatcher\Events\WatcherStarted;
-use CWAscend\LaravelColumnWatcher\Events\WatcherSucceeded;
-use CWAscend\LaravelColumnWatcher\Support\ColumnWatcherState;
-use CWAscend\LaravelColumnWatcher\Support\WatcherRegistry;
+use Ascend\LaravelColumnWatcher\Concerns\Fakeable;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Events\WatcherFailed;
+use Ascend\LaravelColumnWatcher\Events\WatcherStarted;
+use Ascend\LaravelColumnWatcher\Events\WatcherSucceeded;
+use Ascend\LaravelColumnWatcher\Support\ColumnWatcherState;
+use Ascend\LaravelColumnWatcher\Support\WatcherRegistry;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -1,6 +1,6 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Console;
+namespace Ascend\LaravelColumnWatcher\Console;
 
 use Illuminate\Console\GeneratorCommand;
 use Symfony\Component\Console\Input\InputOption;

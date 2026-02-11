@@ -1,10 +1,10 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Unit;
+namespace Ascend\LaravelColumnWatcher\Tests\Unit;
 
-use CWAscend\LaravelColumnWatcher\Support\ColumnWatcherState;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\Support\ColumnWatcherState;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class ColumnWatcherStateTest extends TestCase
 {

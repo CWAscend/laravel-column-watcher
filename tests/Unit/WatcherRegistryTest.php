@@ -1,13 +1,13 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Tests\Unit;
+namespace Ascend\LaravelColumnWatcher\Tests\Unit;
 
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
-use CWAscend\LaravelColumnWatcher\Support\WatcherRegistry;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
-use CWAscend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
-use CWAscend\LaravelColumnWatcher\Tests\TestCase;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
+use Ascend\LaravelColumnWatcher\Support\WatcherRegistry;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\StatusChangedHandler;
+use Ascend\LaravelColumnWatcher\Tests\Fixtures\TestModel;
+use Ascend\LaravelColumnWatcher\Tests\TestCase;
 
 class WatcherRegistryTest extends TestCase
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Support;
+namespace Ascend\LaravelColumnWatcher\Support;
 
-use CWAscend\LaravelColumnWatcher\Attributes\Watch;
-use CWAscend\LaravelColumnWatcher\ColumnWatcher;
-use CWAscend\LaravelColumnWatcher\Enums\Timing;
-use CWAscend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
-use CWAscend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
+use Ascend\LaravelColumnWatcher\Attributes\Watch;
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Timing;
+use Ascend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
+use Ascend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use ReflectionClass;
 

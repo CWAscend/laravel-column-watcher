@@ -1,6 +1,6 @@
 <?php
 
-namespace CWAscend\LaravelColumnWatcher\Enums;
+namespace Ascend\LaravelColumnWatcher\Enums;
 
 enum Timing
 {
