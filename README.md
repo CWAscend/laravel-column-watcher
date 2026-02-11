@@ -29,6 +29,8 @@ A Laravel package that provides attribute-based column watching for Eloquent mod
 - [Configuration](#configuration)
 - [Artisan Commands](#artisan-commands)
 - [Testing](#testing)
+  - [Cleaning Up Fake State](#cleaning-up-fake-state)
+  - [Testing Queued Handlers with DatabaseTransactions](#testing-queued-handlers-with-databasetransactions)
 - [Edge Cases & Limitations](#edge-cases--limitations)
 - [Requirements](#requirements)
 
@@ -847,6 +849,49 @@ public function test_status_change_sends_notification(): void
     Notification::assertSentTo($request->submitter, RequestSubmitted::class);
 }
 ```
+
+### Cleaning Up Fake State
+
+When mixing tests that use `fake()` with tests that need watchers to actually execute, call `stopFaking()` in your `tearDown()` to prevent state pollution between tests:
+
+```php
+protected function tearDown(): void
+{
+    HandleStatusChange::stopFaking();
+    parent::tearDown();
+}
+```
+
+Without this, a test that calls `fake()` will leave the watcher in fake mode, causing subsequent tests that expect the watcher to run to fail silently.
+
+### Testing Queued Handlers with DatabaseTransactions
+
+When using Laravel's `DatabaseTransactions` trait, queued handlers won't execute because they wait for `DB::afterCommit()`, which never fires (transactions are rolled back, not committed).
+
+Call `withoutAfterCommit()` in your `setUp()` to bypass this:
+
+```php
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+
+protected function setUp(): void
+{
+    parent::setUp();
+    ColumnWatcher::withoutAfterCommit();
+}
+
+public function test_status_change_sends_notification(): void
+{
+    Notification::fake();
+
+    $request = Request::factory()->create(['status' => 'draft']);
+    $request->update(['status' => 'submitted']);
+
+    // This now works with DatabaseTransactions
+    Notification::assertSentTo($request->submitter, RequestSubmitted::class);
+}
+```
+
+**Note:** `withoutAfterCommit()` is safe to call unconditionally - it only affects behaviour when there's an active transaction.
 
 ## Edge Cases & Limitations
 
