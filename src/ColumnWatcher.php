@@ -173,4 +173,33 @@ abstract class ColumnWatcher
     {
         static::state()->finishProcessing($model, $column);
     }
+
+    /**
+     * Disable DB::afterCommit() for queued handlers.
+     *
+     * This is useful for testing with DatabaseTransactions trait,
+     * where transactions never commit (they roll back). When enabled,
+     * queued handlers are dispatched immediately instead of waiting
+     * for the transaction to commit.
+     */
+    public static function withoutAfterCommit(): void
+    {
+        static::state()->withoutAfterCommit = true;
+    }
+
+    /**
+     * Enable DB::afterCommit() for queued handlers (default behavior).
+     */
+    public static function withAfterCommit(): void
+    {
+        static::state()->withoutAfterCommit = false;
+    }
+
+    /**
+     * Check if DB::afterCommit() is currently bypassed.
+     */
+    public static function isWithoutAfterCommit(): bool
+    {
+        return static::state()->withoutAfterCommit;
+    }
 }

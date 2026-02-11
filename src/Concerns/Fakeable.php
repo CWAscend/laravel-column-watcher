@@ -141,9 +141,44 @@ trait Fakeable
             fn (ColumnChange $change) => $change->oldValue === $oldValue && $change->newValue === $newValue
         );
 
+        $oldStr = static::valueToString($oldValue);
+        $newStr = static::valueToString($newValue);
+
         Assert::assertNotNull(
             $matched,
-            $message ?? 'Expected ['.static::class."] to be triggered with values [{$oldValue}] -> [{$newValue}] but it was not."
+            $message ?? 'Expected ['.static::class."] to be triggered with values [{$oldStr}] -> [{$newStr}] but it was not."
         );
+    }
+
+    /**
+     * Convert a value to a displayable string for error messages.
+     */
+    protected static function valueToString(mixed $value): string
+    {
+        if ($value instanceof \BackedEnum) {
+            return (string) $value->value;
+        }
+
+        if ($value instanceof \UnitEnum) {
+            return $value->name;
+        }
+
+        if (is_null($value)) {
+            return 'null';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_array($value)) {
+            return json_encode($value);
+        }
+
+        if (is_object($value)) {
+            return get_class($value);
+        }
+
+        return (string) $value;
     }
 }
