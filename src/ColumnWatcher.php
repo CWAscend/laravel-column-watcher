@@ -36,10 +36,10 @@ abstract class ColumnWatcher
      * Create a new watcher instance.
      */
     public function __construct(
-        public readonly Model $model,
-        public readonly string $column,
-        public readonly mixed $oldValue,
-        public readonly mixed $newValue,
+        public Model $model,
+        public string $column,
+        public mixed $oldValue,
+        public mixed $newValue,
     ) {}
 
     /**
