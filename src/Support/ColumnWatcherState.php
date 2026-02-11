@@ -26,6 +26,15 @@ class ColumnWatcherState
     public array $processing = [];
 
     /**
+     * Whether to bypass DB::afterCommit() for queued handlers.
+     *
+     * When true, queued handlers are dispatched immediately instead of
+     * waiting for the transaction to commit. This is useful for testing
+     * with DatabaseTransactions trait, where transactions never commit.
+     */
+    public bool $withoutAfterCommit = false;
+
+    /**
      * Generate a unique key for a model/column combination.
      */
     public function key(Model $model, string $column): string
@@ -66,5 +75,6 @@ class ColumnWatcherState
     {
         $this->enabled = true;
         $this->processing = [];
+        $this->withoutAfterCommit = false;
     }
 }

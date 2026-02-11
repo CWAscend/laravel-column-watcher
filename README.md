@@ -1,7 +1,7 @@
 # Laravel Column Watcher
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ascend/laravel-column-watcher.svg?style=flat-square)](https://packagist.org/packages/ascend/laravel-column-watcher)
-[![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen?style=flat-square)](tests)
+[![Tests](https://img.shields.io/badge/tests-148%20passing-brightgreen?style=flat-square)](tests)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue?style=flat-square)](composer.json)
 [![Laravel Version](https://img.shields.io/badge/laravel-11%20%7C%2012-red?style=flat-square)](composer.json)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)

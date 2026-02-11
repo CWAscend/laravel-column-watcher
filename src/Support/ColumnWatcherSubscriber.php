@@ -102,15 +102,20 @@ class ColumnWatcherSubscriber
     /**
      * Dispatch a watcher to the queue after the current transaction commits.
      *
-     * If not in a transaction, dispatches immediately.
+     * If not in a transaction, or if withoutAfterCommit is enabled (for testing),
+     * dispatches immediately.
      */
     protected function dispatchAfterCommit(ColumnWatcher $watcher): void
     {
-        if (DB::transactionLevel() > 0) {
-            DB::afterCommit(fn () => dispatch($watcher));
-        } else {
+        $state = app(ColumnWatcherState::class);
+
+        if ($state->withoutAfterCommit || DB::transactionLevel() === 0) {
             dispatch($watcher);
+
+            return;
         }
+
+        DB::afterCommit(fn () => dispatch($watcher));
     }
 
     /**
