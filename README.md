@@ -27,7 +27,7 @@ A Laravel package that provides attribute-based column watching for Eloquent mod
 - [Events](#events)
 - [Laravel Octane Compatibility](#laravel-octane-compatibility)
 - [Configuration](#configuration)
-- [Listing Watchers](#listing-watchers)
+- [Artisan Commands](#artisan-commands)
 - [Testing](#testing)
 - [Edge Cases & Limitations](#edge-cases--limitations)
 - [Requirements](#requirements)
@@ -666,29 +666,79 @@ return [
 ];
 ```
 
-## Listing Watchers
+## Artisan Commands
 
-To see all registered watchers, run:
+### `watcher:list`
+
+List all registered column watchers in your application:
 
 ```bash
 php artisan watcher:list
 ```
 
-This outputs a list similar to `event:list`:
+Output (styled similar to Laravel's `event:list`):
 
 ```
-  App\Models\Request.status (SAVED) ..........................
+  App\Models\Request.status (SAVED) ........................................
   ⇂ App\Watchers\HandleStatusChange
   ⇂ App\Watchers\NotifyAdmins [queued]
 
-  App\Models\Request.status (SAVING) .........................
+  App\Models\Request.status (SAVING) .......................................
   ⇂ App\Watchers\ValidateStatusTransition
 
-  App\Models\Request.priority (SAVED) ........................
+  App\Models\Request.priority (SAVED) ......................................
   ⇂ App\Watchers\HandlePriorityChange
+
+  App\Models\User.email (SAVED) ............................................
+  ⇂ App\Watchers\SendEmailVerification [queued]
 ```
 
-The command scans model directories configured in `model_paths` and also includes any programmatically registered watchers. Queueable handlers are marked with `[queued]`.
+The command scans model directories configured in `model_paths` and includes programmatically registered watchers. Queueable handlers are marked with `[queued]`.
+
+### `make:watcher`
+
+Generate a new watcher handler class:
+
+```bash
+# Create a basic watcher
+php artisan make:watcher HandleStatusChange
+
+# Create a queueable watcher (runs in background)
+php artisan make:watcher SyncToExternalService --queued
+```
+
+This creates a file in `app/Watchers/` (configurable via `namespace` in config):
+
+```php
+<?php
+
+namespace App\Watchers;
+
+use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Data\ColumnChange;
+
+class HandleStatusChange extends ColumnWatcher
+{
+    protected function execute(ColumnChange $change): void
+    {
+        //
+    }
+}
+```
+
+With `--queued`, the class also implements `ShouldQueue`:
+
+```php
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SyncToExternalService extends ColumnWatcher implements ShouldQueue
+{
+    protected function execute(ColumnChange $change): void
+    {
+        //
+    }
+}
+```
 
 ## Testing
 
