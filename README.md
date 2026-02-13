@@ -8,6 +8,10 @@
 
 A Laravel package that provides attribute-based column watching for Eloquent models. React to specific column changes without the boilerplate of full model observers.
 
+
+![Laravel Column Watcher Code Snippet](img/code-snippet.webp "Laravel Column Watcher Code Snippet")
+
+
 ## Table of Contents
 
 - [The Problem](#the-problem)
