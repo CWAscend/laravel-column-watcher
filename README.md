@@ -3,7 +3,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ascend/laravel-column-watcher.svg?style=flat-square)](https://packagist.org/packages/ascend/laravel-column-watcher)
 [![Tests](https://img.shields.io/badge/tests-148%20passing-brightgreen?style=flat-square)](tests)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue?style=flat-square)](composer.json)
-[![Laravel Version](https://img.shields.io/badge/laravel-11%20%7C%2012-red?style=flat-square)](composer.json)
+[![Laravel Version](https://img.shields.io/badge/laravel-11%20%7C%2012%20%7C%2013-red?style=flat-square)](composer.json)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 A Laravel package that provides attribute-based column watching for Eloquent models. React to specific column changes without the boilerplate of full model observers.
@@ -980,8 +980,8 @@ class Order extends Model {}
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 11 or 12
+- PHP 8.2+ (PHP 8.3+ required for Laravel 13)
+- Laravel 11, 12, or 13
 
 ## License
 
