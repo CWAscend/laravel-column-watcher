@@ -41,14 +41,8 @@ class WatcherRegistry
         Timing $timing = Timing::SAVED
     ): void {
         $this->validateHandler($handlerClass);
-        $this->validateNotQueueableWithSaving($handlerClass, $timing);
 
-        $columns = is_array($columns) ? $columns : [$columns];
-        $timingKey = $this->timingKey($timing);
-
-        foreach ($columns as $column) {
-            $this->watchers[$modelClass][$timingKey][$column][] = $handlerClass;
-        }
+        $this->store($modelClass, is_array($columns) ? $columns : [$columns], $handlerClass, $timing);
     }
 
     /**
@@ -110,13 +104,26 @@ class WatcherRegistry
             $watch = $attribute->newInstance();
 
             $this->validateHandler($watch->handler);
-            $this->validateNotQueueableWithSaving($watch->handler, $watch->timing);
 
-            $timingKey = $this->timingKey($watch->timing);
+            $this->store($modelClass, $watch->columns, $watch->handler, $watch->timing);
+        }
+    }
 
-            foreach ($watch->columns as $column) {
-                $this->watchers[$modelClass][$timingKey][$column][] = $watch->handler;
-            }
+    /**
+     * Record a handler against every column it was registered for.
+     *
+     * @param  array<string>  $columns
+     *
+     * @throws InvalidTimingException
+     */
+    protected function store(string $modelClass, array $columns, string $handlerClass, Timing $timing): void
+    {
+        $this->validateNotQueueableBeforeSave($handlerClass, $timing);
+
+        foreach ($columns as $column) {
+            $this->validateNoOverlap($modelClass, $column, $handlerClass, $timing);
+
+            $this->watchers[$modelClass][$this->timingKey($timing)][$column][] = $handlerClass;
         }
     }
 
@@ -155,14 +162,33 @@ class WatcherRegistry
     }
 
     /**
-     * Validate that queueable handlers don't use SAVING timing.
+     * Validate that queueable handlers don't use a before-save timing.
      *
      * @throws InvalidTimingException
      */
-    protected function validateNotQueueableWithSaving(string $handlerClass, Timing $timing): void
+    protected function validateNotQueueableBeforeSave(string $handlerClass, Timing $timing): void
     {
-        if ($timing === Timing::SAVING && is_subclass_of($handlerClass, ShouldQueue::class)) {
-            throw InvalidTimingException::queueableWithSaving($handlerClass);
+        if ($timing->isBeforeSave() && is_subclass_of($handlerClass, ShouldQueue::class)) {
+            throw $timing === Timing::SAVING
+                ? InvalidTimingException::queueableWithSaving($handlerClass)
+                : InvalidTimingException::queueableBeforeSave($handlerClass, $timing);
+        }
+    }
+
+    /**
+     * Validate that a handler isn't already watching this column at a timing that fires during
+     * the same save — it would run twice for one change.
+     *
+     * @throws InvalidTimingException
+     */
+    protected function validateNoOverlap(string $modelClass, string $column, string $handlerClass, Timing $timing): void
+    {
+        foreach (Timing::cases() as $other) {
+            $registered = $this->watchers[$modelClass][$this->timingKey($other)][$column] ?? [];
+
+            if ($timing->overlaps($other) && in_array($handlerClass, $registered, true)) {
+                throw InvalidTimingException::overlapping($handlerClass, $column, $timing, $other);
+            }
         }
     }
 
@@ -211,10 +237,13 @@ class WatcherRegistry
      */
     protected function timingFromKey(string $key): Timing
     {
-        return match ($key) {
-            'SAVING' => Timing::SAVING,
-            'SAVED' => Timing::SAVED,
-        };
+        foreach (Timing::cases() as $timing) {
+            if ($timing->name === $key) {
+                return $timing;
+            }
+        }
+
+        throw new \ValueError("Unknown timing [{$key}].");
     }
 
     /**

@@ -80,16 +80,13 @@ class AttributeWatchingTest extends TestCase
         $this->assertEquals($model->id, StatusChangedHandler::$calls[0]['model_id']);
     }
 
-    public function test_handler_is_called_on_create_when_column_is_set(): void
+    public function test_handler_is_not_called_on_create_unless_opted_in(): void
     {
         StatusChangedHandler::reset();
 
-        // Creating with explicit status value triggers watcher because wasChanged returns true
-        $model = TestModelWithAttribute::create(['name' => 'Test', 'status' => 'active']);
+        TestModelWithAttribute::create(['name' => 'Test', 'status' => 'active']);
 
-        // After create, wasChanged('status') returns true, so handler should fire
-        // Note: The behavior depends on Eloquent's wasChanged implementation
-        // If this assertion fails, it means Eloquent doesn't consider initial creates as "changes"
-        $this->assertGreaterThanOrEqual(0, count(StatusChangedHandler::$calls));
+        // SAVED fires after updates only; see CreateAndUpdateTest for Timing::CREATED.
+        $this->assertCount(0, StatusChangedHandler::$calls);
     }
 }

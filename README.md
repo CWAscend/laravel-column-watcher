@@ -22,7 +22,7 @@ A Laravel package that provides attribute-based column watching for Eloquent mod
   - [Register the Watcher](#2-register-the-watcher)
   - [Watch Multiple Columns](#3-watch-multiple-columns)
   - [Multiple Watchers](#4-multiple-watchers)
-  - [Timing: Before vs After Save](#5-timing-before-vs-after-save)
+  - [Timing: Before vs After, Create vs Update](#5-timing-before-vs-after-create-vs-update)
   - [Queueable Handlers](#6-queueable-handlers)
 - [The ColumnChange Object](#the-columnchange-object)
 - [Real-World Examples](#real-world-examples)
@@ -307,26 +307,44 @@ You can attach multiple watchers to the same model:
 class Request extends Model {}
 ```
 
-### 5. Timing: Before vs After Save
+### 5. Timing: Before vs After, Create vs Update
 
-By default, handlers run **after** the model is saved (`Timing::SAVED`). You can run them **before** save using the `timing` parameter:
+By default, handlers run **after** an existing model is updated (`Timing::SAVED`). The `timing` parameter picks a different point, named after the matching Eloquent model event:
+
+| Timing | Runs | On create | On update | Use Case |
+|--------|------|-----------|-----------|----------|
+| `Timing::SAVED` (default) | After database write | No | Yes | Notifications, logging, external API calls |
+| `Timing::SAVING` | Before database write | Yes | Yes | Validation, data transformation, blocking invalid changes |
+| `Timing::CREATED` | After database write | Yes | No | Reacting to a brand-new record |
+| `Timing::CREATING` | Before database write | Yes | No | Defaulting or validating a new record |
+| `Timing::UPDATED` | After database write | No | Yes | Same as `SAVED`, but explicit |
+| `Timing::UPDATING` | Before database write | No | Yes | Validating a transition on an existing record |
 
 ```php
 use Ascend\LaravelColumnWatcher\Enums\Timing;
 
-// Runs AFTER save (default) - use for notifications, logging, side effects
+// Runs AFTER an update (default) - use for notifications, logging, side effects
 #[Watch('status', SendNotification::class)]
 
 // Runs BEFORE save - use for validation, transformation, blocking saves
 #[Watch('status', ValidateStatusTransition::class, Timing::SAVING)]
+
+// Runs after a new record is inserted
+#[Watch('status', SendWelcomeEmail::class, Timing::CREATED)]
 ```
 
-**When to use each:**
+> **`SAVED` does not fire on create.** Unlike Eloquent's `saved` event, `Timing::SAVED` only runs after updates — that is how it has always behaved, and changing it would make existing watchers start firing on every create. Use `Timing::CREATED` (or `CREATED` plus `UPDATED`) when a new record should trigger the watcher.
 
-| Timing | Event | Use Case |
-|--------|-------|----------|
-| `Timing::SAVED` (default) | After database write | Notifications, logging, external API calls |
-| `Timing::SAVING` | Before database write | Validation, data transformation, blocking invalid changes |
+To run after both a create and an update, repeat the attribute:
+
+```php
+#[Watch('postcode', GeocodePostcode::class, Timing::CREATED)]
+#[Watch('postcode', GeocodePostcode::class, Timing::UPDATED)]
+```
+
+On create, a watcher fires for each watched column that was given a value, with `oldValue` set to `null`. Columns left unset on create don't fire.
+
+Registering the same handler on the same column at two timings that fire during the same save — `SAVED` with `UPDATED`, or `SAVING` with `CREATING`/`UPDATING` — throws an `InvalidTimingException`, since it would run twice for one change.
 
 ### 6. Queueable Handlers
 
@@ -368,7 +386,7 @@ class SyncToExternalService extends ColumnWatcher implements ShouldQueue
 }
 ```
 
-**Note:** Queueable handlers only work with `timing: Timing::SAVED` (the default). Using `timing: Timing::SAVING` with a queueable handler would defeat the purpose since the save hasn't happened yet.
+**Note:** Queueable handlers only work with the after-save timings: `SAVED` (the default), `CREATED` or `UPDATED`. Using `SAVING`, `CREATING` or `UPDATING` with a queueable handler would defeat the purpose since the save hasn't happened yet.
 
 ## The ColumnChange Object
 
@@ -901,12 +919,18 @@ public function test_status_change_sends_notification(): void
 
 ### Model Creation
 
-Watchers fire on both `create()` and `update()` operations. When a model is created, the "old value" will be `null` for all columns:
+Only `SAVING`, `CREATING` and `CREATED` watchers fire when a model is created — the default `SAVED` does not (see [Timing](#5-timing-before-vs-after-create-vs-update)). When a watcher fires on create, the "old value" is `null`:
 
 ```php
+#[Watch('status', HandleStatusChange::class, Timing::CREATED)]
+
 $user = User::create(['status' => 'active']);
 // Watcher fires with: oldValue = null, newValue = 'active'
 ```
+
+### Saves Without Changes
+
+Calling `save()` on a model with nothing changed does not fire any watchers, even straight after a save that did change a watched column.
 
 ### Infinite Loop Protection
 
@@ -966,9 +990,9 @@ class SyncToExternal extends ColumnWatcher implements ShouldQueue
 }
 ```
 
-### Queueable Handlers Must Use `Timing::SAVED`
+### Queueable Handlers Must Use an After-Save Timing
 
-You cannot use queueable handlers with `Timing::SAVING`. This is enforced at registration time:
+You cannot use queueable handlers with `Timing::SAVING`, `Timing::CREATING` or `Timing::UPDATING`. This is enforced at registration time:
 
 ```php
 use Ascend\LaravelColumnWatcher\Enums\Timing;

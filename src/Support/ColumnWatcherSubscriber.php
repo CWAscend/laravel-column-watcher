@@ -25,11 +25,29 @@ class ColumnWatcherSubscriber
     {
         $events->listen('eloquent.saving: *', function (string $event, array $payload) {
             [$model] = $payload;
+
+            $creating = ! $model->exists;
+            $this->state()->creating[$model] = $creating;
+
             $this->handleModelEvent($model, Timing::SAVING);
+            $this->handleModelEvent($model, $creating ? Timing::CREATING : Timing::UPDATING);
         });
 
         $events->listen('eloquent.saved: *', function (string $event, array $payload) {
             [$model] = $payload;
+
+            $state = $this->state();
+            $creating = $state->creating[$model] ?? false;
+            unset($state->creating[$model]);
+
+            if ($creating) {
+                $this->handleModelEvent($model, Timing::CREATED);
+
+                return;
+            }
+
+            // SAVED fires after updates only — see Timing::SAVED.
+            $this->handleModelEvent($model, Timing::UPDATED);
             $this->handleModelEvent($model, Timing::SAVED);
         });
     }
@@ -52,13 +70,11 @@ class ColumnWatcherSubscriber
                 continue;
             }
 
-            // For SAVING timing, use isDirty() as changes haven't been persisted yet
-            // For SAVED timing, use wasChanged() as changes were just persisted
-            $hasChanged = $timing === Timing::SAVING
-                ? $model->isDirty($column)
-                : $model->wasChanged($column);
-
-            if (! $hasChanged) {
+            // isDirty() is right for every timing: Laravel only syncs the original
+            // attributes after the `saved` listeners have run. wasChanged() is not —
+            // an insert never records changes, and a save with nothing dirty leaves
+            // the previous save's changes in place.
+            if (! $model->isDirty($column)) {
                 continue;
             }
 
@@ -107,7 +123,7 @@ class ColumnWatcherSubscriber
      */
     protected function dispatchAfterCommit(ColumnWatcher $watcher): void
     {
-        $state = app(ColumnWatcherState::class);
+        $state = $this->state();
 
         if ($state->withoutAfterCommit || DB::transactionLevel() === 0) {
             dispatch($watcher);
@@ -124,5 +140,10 @@ class ColumnWatcherSubscriber
     protected function shouldQueue(string $handlerClass): bool
     {
         return is_subclass_of($handlerClass, ShouldQueue::class);
+    }
+
+    protected function state(): ColumnWatcherState
+    {
+        return app(ColumnWatcherState::class);
     }
 }

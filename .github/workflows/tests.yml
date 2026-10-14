@@ -64,6 +64,13 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
 
+      # Every laravel/framework 11.x release carries a security advisory, which Composer
+      # refuses to install by default. Laravel 11 is still supported, so lift the block for
+      # those jobs only — this is a test install, nothing it resolves ships.
+      - name: Allow Laravel 11 releases with security advisories
+        if: matrix.laravel == 11
+        run: composer config audit.block-insecure false
+
       - name: Install dependencies
         run: |
           composer require "illuminate/database:^${{ matrix.laravel }}.0" "illuminate/support:^${{ matrix.laravel }}.0" "orchestra/testbench:^${{ matrix.testbench }}.0" --no-interaction --no-update
