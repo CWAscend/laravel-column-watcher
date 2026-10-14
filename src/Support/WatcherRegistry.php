@@ -4,8 +4,10 @@ namespace Ascend\LaravelColumnWatcher\Support;
 
 use Ascend\LaravelColumnWatcher\Attributes\Watch;
 use Ascend\LaravelColumnWatcher\ColumnWatcher;
+use Ascend\LaravelColumnWatcher\Enums\Operation;
 use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Ascend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
+use Ascend\LaravelColumnWatcher\Exceptions\InvalidOperationException;
 use Ascend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use ReflectionClass;
@@ -15,9 +17,9 @@ class WatcherRegistry
     /**
      * Registered watchers.
      *
-     * Structure: [ModelClass][timing][column][] = handlerClass
+     * Structure: [ModelClass][timing][column][] = registration
      *
-     * @var array<string, array<string, array<string, array<string>>>>
+     * @var array<string, array<string, array<string, array<int, array{handler: string, onCreate: bool, onUpdate: bool}>>>>
      */
     protected array $watchers = [];
 
@@ -33,34 +35,47 @@ class WatcherRegistry
      *
      * @throws InvalidHandlerException
      * @throws InvalidTimingException
+     * @throws InvalidOperationException
      */
     public function register(
         string $modelClass,
         string|array $columns,
         string $handlerClass,
-        Timing $timing = Timing::SAVED
+        Timing $timing = Timing::SAVED,
+        ?bool $onCreate = null,
+        ?bool $onUpdate = null,
     ): void {
         $this->validateHandler($handlerClass);
         $this->validateNotQueueableWithSaving($handlerClass, $timing);
 
         $columns = is_array($columns) ? $columns : [$columns];
-        $timingKey = $this->timingKey($timing);
 
         foreach ($columns as $column) {
-            $this->watchers[$modelClass][$timingKey][$column][] = $handlerClass;
+            $this->store($modelClass, $timing, $column, $handlerClass, $onCreate, $onUpdate);
         }
     }
 
     /**
      * Get all handlers for a specific model, timing, and column.
      *
+     * When an operation is given, only handlers registered for it are returned.
+     *
      * @return array<string>
      */
-    public function getHandlers(string $modelClass, Timing $timing, string $column): array
+    public function getHandlers(string $modelClass, Timing $timing, string $column, ?Operation $operation = null): array
     {
         $this->ensureModelScanned($modelClass);
 
-        return $this->watchers[$modelClass][$this->timingKey($timing)][$column] ?? [];
+        $registrations = $this->watchers[$modelClass][$this->timingKey($timing)][$column] ?? [];
+
+        return array_values(array_map(
+            fn (array $registration): string => $registration['handler'],
+            array_filter($registrations, fn (array $registration): bool => match ($operation) {
+                null => true,
+                Operation::CREATE => $registration['onCreate'],
+                Operation::UPDATE => $registration['onUpdate'],
+            }),
+        ));
     }
 
     /**
@@ -112,12 +127,39 @@ class WatcherRegistry
             $this->validateHandler($watch->handler);
             $this->validateNotQueueableWithSaving($watch->handler, $watch->timing);
 
-            $timingKey = $this->timingKey($watch->timing);
-
             foreach ($watch->columns as $column) {
-                $this->watchers[$modelClass][$timingKey][$column][] = $watch->handler;
+                $this->store($modelClass, $watch->timing, $column, $watch->handler, $watch->onCreate, $watch->onUpdate);
             }
         }
+    }
+
+    /**
+     * Record a single handler registration.
+     *
+     * Unset operation flags resolve to the behaviour each timing had before they existed, so
+     * upgrading never changes when an existing watcher fires: SAVED fires on update only
+     * (creates are opt-in) and SAVING fires on both.
+     *
+     * @throws InvalidOperationException
+     */
+    protected function store(
+        string $modelClass,
+        Timing $timing,
+        string $column,
+        string $handlerClass,
+        ?bool $onCreate,
+        ?bool $onUpdate,
+    ): void {
+        $onCreate ??= $timing === Timing::SAVING;
+        $onUpdate ??= true;
+
+        $this->validateHasOperation($handlerClass, $onCreate, $onUpdate);
+
+        $this->watchers[$modelClass][$this->timingKey($timing)][$column][] = [
+            'handler' => $handlerClass,
+            'onCreate' => $onCreate,
+            'onUpdate' => $onUpdate,
+        ];
     }
 
     /**
@@ -167,6 +209,18 @@ class WatcherRegistry
     }
 
     /**
+     * Validate that a handler fires on at least one operation.
+     *
+     * @throws InvalidOperationException
+     */
+    protected function validateHasOperation(string $handlerClass, bool $onCreate, bool $onUpdate): void
+    {
+        if (! $onCreate && ! $onUpdate) {
+            throw InvalidOperationException::noOperations($handlerClass);
+        }
+    }
+
+    /**
      * Clear all registered watchers (useful for testing).
      */
     public function clear(): void
@@ -180,7 +234,7 @@ class WatcherRegistry
      *
      * Returns a flat array of watcher registrations for listing.
      *
-     * @return array<int, array{model: string, column: string, timing: Timing, handler: string}>
+     * @return array<int, array{model: string, column: string, timing: Timing, handler: string, onCreate: bool, onUpdate: bool}>
      */
     public function all(): array
     {
@@ -190,13 +244,13 @@ class WatcherRegistry
             foreach ($timings as $timingKey => $columns) {
                 $timing = $this->timingFromKey($timingKey);
 
-                foreach ($columns as $column => $handlers) {
-                    foreach ($handlers as $handler) {
+                foreach ($columns as $column => $registrations) {
+                    foreach ($registrations as $registration) {
                         $result[] = [
                             'model' => $modelClass,
                             'column' => $column,
                             'timing' => $timing,
-                            'handler' => $handler,
+                            ...$registration,
                         ];
                     }
                 }

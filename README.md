@@ -23,7 +23,8 @@ A Laravel package that provides attribute-based column watching for Eloquent mod
   - [Watch Multiple Columns](#3-watch-multiple-columns)
   - [Multiple Watchers](#4-multiple-watchers)
   - [Timing: Before vs After Save](#5-timing-before-vs-after-save)
-  - [Queueable Handlers](#6-queueable-handlers)
+  - [Create vs Update](#6-create-vs-update)
+  - [Queueable Handlers](#7-queueable-handlers)
 - [The ColumnChange Object](#the-columnchange-object)
 - [Real-World Examples](#real-world-examples)
 - [Comparison with Observers](#comparison-with-observers)
@@ -328,7 +329,39 @@ use Ascend\LaravelColumnWatcher\Enums\Timing;
 | `Timing::SAVED` (default) | After database write | Notifications, logging, external API calls |
 | `Timing::SAVING` | Before database write | Validation, data transformation, blocking invalid changes |
 
-### 6. Queueable Handlers
+### 6. Create vs Update
+
+Each save is either a **create** (the model is being inserted) or an **update** (an existing row is changing). By default:
+
+| Timing | Fires on create | Fires on update |
+|--------|-----------------|-----------------|
+| `Timing::SAVED` (default) | No | Yes |
+| `Timing::SAVING` | Yes | Yes |
+
+Use `onCreate` and `onUpdate` to change that per watcher:
+
+```php
+// Also run after a model is created - e.g. to look up data for a brand-new record
+#[Watch('postcode', GeocodePostcode::class, onCreate: true)]
+
+// Only when the model is created, never on later edits
+#[Watch('status', SendWelcomeEmail::class, onCreate: true, onUpdate: false)]
+
+// A SAVING watcher that ignores creates
+#[Watch('status', ValidateStatusTransition::class, Timing::SAVING, onCreate: false)]
+```
+
+On create, a watcher fires for each watched column that was given a value, with `oldValue` set to `null`. Columns left unset on create don't fire.
+
+Leaving both flags out keeps the defaults above, so existing watchers behave exactly as before. Disabling both throws an `InvalidOperationException`, since the watcher could never fire.
+
+The same options are available when registering in code:
+
+```php
+ColumnWatcher::register(Address::class, 'postcode', GeocodePostcode::class, onCreate: true);
+```
+
+### 7. Queueable Handlers
 
 For handlers that perform slow operations (sending emails, calling APIs), add `implements ShouldQueue` to run them in the background:
 
@@ -686,20 +719,20 @@ Output (styled similar to Laravel's `event:list`):
 
 ```
   App\Models\Request.status (SAVED) ........................................
-  ⇂ App\Watchers\HandleStatusChange
-  ⇂ App\Watchers\NotifyAdmins [queued]
+  ⇂ App\Watchers\HandleStatusChange [update only]
+  ⇂ App\Watchers\NotifyAdmins [update only] [queued]
 
   App\Models\Request.status (SAVING) .......................................
   ⇂ App\Watchers\ValidateStatusTransition
 
   App\Models\Request.priority (SAVED) ......................................
-  ⇂ App\Watchers\HandlePriorityChange
+  ⇂ App\Watchers\HandlePriorityChange [update only]
 
   App\Models\User.email (SAVED) ............................................
-  ⇂ App\Watchers\SendEmailVerification [queued]
+  ⇂ App\Watchers\SendEmailVerification [update only] [queued]
 ```
 
-The command scans model directories configured in `model_paths` and includes programmatically registered watchers. Queueable handlers are marked with `[queued]`.
+The command scans model directories configured in `model_paths` and includes programmatically registered watchers. Handlers that fire on only one of create or update are marked `[create only]` or `[update only]`, and queueable handlers are marked with `[queued]`.
 
 ### `make:watcher`
 
@@ -901,12 +934,18 @@ public function test_status_change_sends_notification(): void
 
 ### Model Creation
 
-Watchers fire on both `create()` and `update()` operations. When a model is created, the "old value" will be `null` for all columns:
+`Timing::SAVED` watchers do not fire when a model is created unless they opt in with `onCreate: true`; `Timing::SAVING` watchers do by default (see [Create vs Update](#6-create-vs-update)). When a watcher fires on create, the "old value" is `null`:
 
 ```php
+#[Watch('status', HandleStatusChange::class, onCreate: true)]
+
 $user = User::create(['status' => 'active']);
 // Watcher fires with: oldValue = null, newValue = 'active'
 ```
+
+### Saves Without Changes
+
+Calling `save()` on a model with nothing changed does not fire any watchers, even straight after a save that did change a watched column.
 
 ### Infinite Loop Protection
 

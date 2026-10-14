@@ -2,7 +2,9 @@
 
 namespace Ascend\LaravelColumnWatcher\Support;
 
+use Ascend\LaravelColumnWatcher\Enums\Operation;
 use Illuminate\Database\Eloquent\Model;
+use WeakMap;
 
 /**
  * Holds mutable runtime state for column watchers.
@@ -33,6 +35,21 @@ class ColumnWatcherState
      * with DatabaseTransactions trait, where transactions never commit.
      */
     public bool $withoutAfterCommit = false;
+
+    /**
+     * The operation each in-flight save is performing, recorded at `saving`.
+     *
+     * By `saved` an inserted model already exists, and wasRecentlyCreated stays true for
+     * every later save of the same instance, so neither can tell a create from an update.
+     *
+     * @var WeakMap<Model, Operation>
+     */
+    public WeakMap $operations;
+
+    public function __construct()
+    {
+        $this->operations = new WeakMap;
+    }
 
     /**
      * Generate a unique key for a model/column combination.
@@ -76,5 +93,6 @@ class ColumnWatcherState
         $this->enabled = true;
         $this->processing = [];
         $this->withoutAfterCommit = false;
+        $this->operations = new WeakMap;
     }
 }

@@ -113,9 +113,11 @@ abstract class ColumnWatcher
         string $modelClass,
         string|array $columns,
         string $handler,
-        Timing $timing = Timing::SAVED
+        Timing $timing = Timing::SAVED,
+        ?bool $onCreate = null,
+        ?bool $onUpdate = null,
     ): void {
-        app(WatcherRegistry::class)->register($modelClass, $columns, $handler, $timing);
+        app(WatcherRegistry::class)->register($modelClass, $columns, $handler, $timing, $onCreate, $onUpdate);
     }
 
     /**

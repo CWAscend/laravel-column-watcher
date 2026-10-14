@@ -121,8 +121,8 @@ class ListWatchersCommand extends Command
     /**
      * Group watchers by model.column.timing key.
      *
-     * @param  array<int, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handler: string}>  $watchers
-     * @return array<string, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handlers: array<string>}>
+     * @param  array<int, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handler: string, onCreate: bool, onUpdate: bool}>  $watchers
+     * @return array<string, array{model: string, column: string, timing: \Ascend\LaravelColumnWatcher\Enums\Timing, handlers: array<int, array{handler: string, onCreate: bool, onUpdate: bool}>}>
      */
     protected function groupWatchers(array $watchers): array
     {
@@ -140,7 +140,11 @@ class ListWatchersCommand extends Command
                 ];
             }
 
-            $grouped[$key]['handlers'][] = $watcher['handler'];
+            $grouped[$key]['handlers'][] = [
+                'handler' => $watcher['handler'],
+                'onCreate' => $watcher['onCreate'],
+                'onUpdate' => $watcher['onUpdate'],
+            ];
         }
 
         // Sort by key for consistent output
@@ -162,9 +166,15 @@ class ListWatchersCommand extends Command
 
             $this->line("  <fg=blue>{$header}</> <fg=gray>{$dots}</>");
 
-            foreach ($group['handlers'] as $handler) {
+            foreach ($group['handlers'] as $registration) {
+                $handler = $registration['handler'];
+                $operationIndicator = match (true) {
+                    ! $registration['onCreate'] => ' <fg=cyan>[update only]</>',
+                    ! $registration['onUpdate'] => ' <fg=cyan>[create only]</>',
+                    default => '',
+                };
                 $queueIndicator = $this->isQueueable($handler) ? ' <fg=yellow>[queued]</>' : '';
-                $this->line("  <fg=gray>⇂</> {$handler}{$queueIndicator}");
+                $this->line("  <fg=gray>⇂</> {$handler}{$operationIndicator}{$queueIndicator}");
             }
         }
     }
