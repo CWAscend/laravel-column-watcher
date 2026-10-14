@@ -4,10 +4,8 @@ namespace Ascend\LaravelColumnWatcher\Support;
 
 use Ascend\LaravelColumnWatcher\Attributes\Watch;
 use Ascend\LaravelColumnWatcher\ColumnWatcher;
-use Ascend\LaravelColumnWatcher\Enums\Operation;
 use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Ascend\LaravelColumnWatcher\Exceptions\InvalidHandlerException;
-use Ascend\LaravelColumnWatcher\Exceptions\InvalidOperationException;
 use Ascend\LaravelColumnWatcher\Exceptions\InvalidTimingException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use ReflectionClass;
@@ -17,9 +15,9 @@ class WatcherRegistry
     /**
      * Registered watchers.
      *
-     * Structure: [ModelClass][timing][column][] = registration
+     * Structure: [ModelClass][timing][column][] = handlerClass
      *
-     * @var array<string, array<string, array<string, array<int, array{handler: string, onCreate: bool, onUpdate: bool}>>>>
+     * @var array<string, array<string, array<string, array<string>>>>
      */
     protected array $watchers = [];
 
@@ -35,47 +33,28 @@ class WatcherRegistry
      *
      * @throws InvalidHandlerException
      * @throws InvalidTimingException
-     * @throws InvalidOperationException
      */
     public function register(
         string $modelClass,
         string|array $columns,
         string $handlerClass,
-        Timing $timing = Timing::SAVED,
-        ?bool $onCreate = null,
-        ?bool $onUpdate = null,
+        Timing $timing = Timing::SAVED
     ): void {
         $this->validateHandler($handlerClass);
-        $this->validateNotQueueableWithSaving($handlerClass, $timing);
 
-        $columns = is_array($columns) ? $columns : [$columns];
-
-        foreach ($columns as $column) {
-            $this->store($modelClass, $timing, $column, $handlerClass, $onCreate, $onUpdate);
-        }
+        $this->store($modelClass, is_array($columns) ? $columns : [$columns], $handlerClass, $timing);
     }
 
     /**
      * Get all handlers for a specific model, timing, and column.
      *
-     * When an operation is given, only handlers registered for it are returned.
-     *
      * @return array<string>
      */
-    public function getHandlers(string $modelClass, Timing $timing, string $column, ?Operation $operation = null): array
+    public function getHandlers(string $modelClass, Timing $timing, string $column): array
     {
         $this->ensureModelScanned($modelClass);
 
-        $registrations = $this->watchers[$modelClass][$this->timingKey($timing)][$column] ?? [];
-
-        return array_values(array_map(
-            fn (array $registration): string => $registration['handler'],
-            array_filter($registrations, fn (array $registration): bool => match ($operation) {
-                null => true,
-                Operation::CREATE => $registration['onCreate'],
-                Operation::UPDATE => $registration['onUpdate'],
-            }),
-        ));
+        return $this->watchers[$modelClass][$this->timingKey($timing)][$column] ?? [];
     }
 
     /**
@@ -125,41 +104,27 @@ class WatcherRegistry
             $watch = $attribute->newInstance();
 
             $this->validateHandler($watch->handler);
-            $this->validateNotQueueableWithSaving($watch->handler, $watch->timing);
 
-            foreach ($watch->columns as $column) {
-                $this->store($modelClass, $watch->timing, $column, $watch->handler, $watch->onCreate, $watch->onUpdate);
-            }
+            $this->store($modelClass, $watch->columns, $watch->handler, $watch->timing);
         }
     }
 
     /**
-     * Record a single handler registration.
+     * Record a handler against every column it was registered for.
      *
-     * Unset operation flags resolve to the behaviour each timing had before they existed, so
-     * upgrading never changes when an existing watcher fires: SAVED fires on update only
-     * (creates are opt-in) and SAVING fires on both.
+     * @param  array<string>  $columns
      *
-     * @throws InvalidOperationException
+     * @throws InvalidTimingException
      */
-    protected function store(
-        string $modelClass,
-        Timing $timing,
-        string $column,
-        string $handlerClass,
-        ?bool $onCreate,
-        ?bool $onUpdate,
-    ): void {
-        $onCreate ??= $timing === Timing::SAVING;
-        $onUpdate ??= true;
+    protected function store(string $modelClass, array $columns, string $handlerClass, Timing $timing): void
+    {
+        $this->validateNotQueueableBeforeSave($handlerClass, $timing);
 
-        $this->validateHasOperation($handlerClass, $onCreate, $onUpdate);
+        foreach ($columns as $column) {
+            $this->validateNoOverlap($modelClass, $column, $handlerClass, $timing);
 
-        $this->watchers[$modelClass][$this->timingKey($timing)][$column][] = [
-            'handler' => $handlerClass,
-            'onCreate' => $onCreate,
-            'onUpdate' => $onUpdate,
-        ];
+            $this->watchers[$modelClass][$this->timingKey($timing)][$column][] = $handlerClass;
+        }
     }
 
     /**
@@ -197,26 +162,33 @@ class WatcherRegistry
     }
 
     /**
-     * Validate that queueable handlers don't use SAVING timing.
+     * Validate that queueable handlers don't use a before-save timing.
      *
      * @throws InvalidTimingException
      */
-    protected function validateNotQueueableWithSaving(string $handlerClass, Timing $timing): void
+    protected function validateNotQueueableBeforeSave(string $handlerClass, Timing $timing): void
     {
-        if ($timing === Timing::SAVING && is_subclass_of($handlerClass, ShouldQueue::class)) {
-            throw InvalidTimingException::queueableWithSaving($handlerClass);
+        if ($timing->isBeforeSave() && is_subclass_of($handlerClass, ShouldQueue::class)) {
+            throw $timing === Timing::SAVING
+                ? InvalidTimingException::queueableWithSaving($handlerClass)
+                : InvalidTimingException::queueableBeforeSave($handlerClass, $timing);
         }
     }
 
     /**
-     * Validate that a handler fires on at least one operation.
+     * Validate that a handler isn't already watching this column at a timing that fires during
+     * the same save — it would run twice for one change.
      *
-     * @throws InvalidOperationException
+     * @throws InvalidTimingException
      */
-    protected function validateHasOperation(string $handlerClass, bool $onCreate, bool $onUpdate): void
+    protected function validateNoOverlap(string $modelClass, string $column, string $handlerClass, Timing $timing): void
     {
-        if (! $onCreate && ! $onUpdate) {
-            throw InvalidOperationException::noOperations($handlerClass);
+        foreach (Timing::cases() as $other) {
+            $registered = $this->watchers[$modelClass][$this->timingKey($other)][$column] ?? [];
+
+            if ($timing->overlaps($other) && in_array($handlerClass, $registered, true)) {
+                throw InvalidTimingException::overlapping($handlerClass, $column, $timing, $other);
+            }
         }
     }
 
@@ -234,7 +206,7 @@ class WatcherRegistry
      *
      * Returns a flat array of watcher registrations for listing.
      *
-     * @return array<int, array{model: string, column: string, timing: Timing, handler: string, onCreate: bool, onUpdate: bool}>
+     * @return array<int, array{model: string, column: string, timing: Timing, handler: string}>
      */
     public function all(): array
     {
@@ -244,13 +216,13 @@ class WatcherRegistry
             foreach ($timings as $timingKey => $columns) {
                 $timing = $this->timingFromKey($timingKey);
 
-                foreach ($columns as $column => $registrations) {
-                    foreach ($registrations as $registration) {
+                foreach ($columns as $column => $handlers) {
+                    foreach ($handlers as $handler) {
                         $result[] = [
                             'model' => $modelClass,
                             'column' => $column,
                             'timing' => $timing,
-                            ...$registration,
+                            'handler' => $handler,
                         ];
                     }
                 }
@@ -265,10 +237,13 @@ class WatcherRegistry
      */
     protected function timingFromKey(string $key): Timing
     {
-        return match ($key) {
-            'SAVING' => Timing::SAVING,
-            'SAVED' => Timing::SAVED,
-        };
+        foreach (Timing::cases() as $timing) {
+            if ($timing->name === $key) {
+                return $timing;
+            }
+        }
+
+        throw new \ValueError("Unknown timing [{$key}].");
     }
 
     /**

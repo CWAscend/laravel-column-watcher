@@ -2,7 +2,6 @@
 
 namespace Ascend\LaravelColumnWatcher\Support;
 
-use Ascend\LaravelColumnWatcher\Enums\Operation;
 use Illuminate\Database\Eloquent\Model;
 use WeakMap;
 
@@ -37,18 +36,18 @@ class ColumnWatcherState
     public bool $withoutAfterCommit = false;
 
     /**
-     * The operation each in-flight save is performing, recorded at `saving`.
+     * Whether each in-flight save is inserting the model, recorded at `saving`.
      *
      * By `saved` an inserted model already exists, and wasRecentlyCreated stays true for
      * every later save of the same instance, so neither can tell a create from an update.
      *
-     * @var WeakMap<Model, Operation>
+     * @var WeakMap<Model, bool>
      */
-    public WeakMap $operations;
+    public WeakMap $creating;
 
     public function __construct()
     {
-        $this->operations = new WeakMap;
+        $this->creating = new WeakMap;
     }
 
     /**
@@ -93,6 +92,6 @@ class ColumnWatcherState
         $this->enabled = true;
         $this->processing = [];
         $this->withoutAfterCommit = false;
-        $this->operations = new WeakMap;
+        $this->creating = new WeakMap;
     }
 }

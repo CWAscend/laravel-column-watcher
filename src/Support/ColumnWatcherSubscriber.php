@@ -3,7 +3,6 @@
 namespace Ascend\LaravelColumnWatcher\Support;
 
 use Ascend\LaravelColumnWatcher\ColumnWatcher;
-use Ascend\LaravelColumnWatcher\Enums\Operation;
 use Ascend\LaravelColumnWatcher\Enums\Timing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
@@ -27,27 +26,36 @@ class ColumnWatcherSubscriber
         $events->listen('eloquent.saving: *', function (string $event, array $payload) {
             [$model] = $payload;
 
-            $operation = $model->exists ? Operation::UPDATE : Operation::CREATE;
-            $this->state()->operations[$model] = $operation;
+            $creating = ! $model->exists;
+            $this->state()->creating[$model] = $creating;
 
-            $this->handleModelEvent($model, Timing::SAVING, $operation);
+            $this->handleModelEvent($model, Timing::SAVING);
+            $this->handleModelEvent($model, $creating ? Timing::CREATING : Timing::UPDATING);
         });
 
         $events->listen('eloquent.saved: *', function (string $event, array $payload) {
             [$model] = $payload;
 
-            $operations = $this->state()->operations;
-            $operation = $operations[$model] ?? Operation::UPDATE;
-            unset($operations[$model]);
+            $state = $this->state();
+            $creating = $state->creating[$model] ?? false;
+            unset($state->creating[$model]);
 
-            $this->handleModelEvent($model, Timing::SAVED, $operation);
+            if ($creating) {
+                $this->handleModelEvent($model, Timing::CREATED);
+
+                return;
+            }
+
+            // SAVED fires after updates only — see Timing::SAVED.
+            $this->handleModelEvent($model, Timing::UPDATED);
+            $this->handleModelEvent($model, Timing::SAVED);
         });
     }
 
     /**
      * Handle a model event.
      */
-    protected function handleModelEvent(Model $model, Timing $timing, Operation $operation): void
+    protected function handleModelEvent(Model $model, Timing $timing): void
     {
         if (! ColumnWatcher::isEnabled()) {
             return;
@@ -62,7 +70,7 @@ class ColumnWatcherSubscriber
                 continue;
             }
 
-            // isDirty() is right for both timings: Laravel only syncs the original
+            // isDirty() is right for every timing: Laravel only syncs the original
             // attributes after the `saved` listeners have run. wasChanged() is not —
             // an insert never records changes, and a save with nothing dirty leaves
             // the previous save's changes in place.
@@ -70,17 +78,17 @@ class ColumnWatcherSubscriber
                 continue;
             }
 
-            $this->dispatchHandlers($model, $timing, $column, $operation);
+            $this->dispatchHandlers($model, $timing, $column);
         }
     }
 
     /**
      * Dispatch all handlers for a column change.
      */
-    protected function dispatchHandlers(Model $model, Timing $timing, string $column, Operation $operation): void
+    protected function dispatchHandlers(Model $model, Timing $timing, string $column): void
     {
         $modelClass = get_class($model);
-        $handlers = $this->registry->getHandlers($modelClass, $timing, $column, $operation);
+        $handlers = $this->registry->getHandlers($modelClass, $timing, $column);
 
         foreach ($handlers as $handlerClass) {
             $watcher = new $handlerClass(

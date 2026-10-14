@@ -86,7 +86,7 @@ class AttributeWatchingTest extends TestCase
 
         TestModelWithAttribute::create(['name' => 'Test', 'status' => 'active']);
 
-        // SAVED watchers fire on update only by default; see CreateAndUpdateTest for onCreate.
+        // SAVED fires after updates only; see CreateAndUpdateTest for Timing::CREATED.
         $this->assertCount(0, StatusChangedHandler::$calls);
     }
 }
